@@ -56,6 +56,11 @@ void Button::SetColorReg()
     drawColor = regColor;
 }
 
+int Button::GetI()
+{
+    return i;
+}
+
 bool Button::IsAnimating()
 {
     return isAnimating;

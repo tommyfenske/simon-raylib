@@ -29,13 +29,15 @@ static void UpdateDrawFrame(void);  // Update and Draw (one frame)
 // Functions
 static void PlaySequence(void);
 static void AddToSequence(void);
+static void StartUserInput(void);
 
 //Variables
 Button buttons[4];
-vector<int> sequence = {0, 1, 2, 3}; // each int corresponds to the button to be pressed
+vector<int> sequence = {0}; // each int corresponds to the button to be pressed
 bool isAnimating = false;
 int indexAnimating = -1;
 
+bool gettingInput = false;
 int userIndex = -1;
 int userGuess = -1;
 
@@ -62,7 +64,8 @@ static const string btnTones[4] = {
 	"assets/tone-4.wav"
 };
 
-int main() {
+int main()
+{ 
 	InitWindow(screenWidth, screenHeight, "S I M O N");
 	InitAudioDevice();
 	//ToggleFullscreen();
@@ -135,11 +138,35 @@ void UpdateGame(void)
 			} else {
 				// End Sequence Animation
 				isAnimating = false;
-				AddToSequence();
+				StartUserInput();
 			}
 		}	
-	} else { // GET USER SEQUENCE
+	} else if (gettingInput) { // GET USER SEQUENCE
+		 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 
+			int clickedIndex = -1;
+			for (Button b : buttons) {
+				if ( b.IsCollidingPt(GetMousePosition()) ) {
+					clickedIndex = b.GetI();
+					break;
+				}
+			}
+
+			// Check if clicked index corresponds to index in sequence
+			if (clickedIndex == sequence[userIndex]) {
+				// CORRECT GUESS
+				cout << "CORRECT" << endl;
+				userIndex++;
+			} else { 
+				// INCORRECT GUESS
+				cout << "INCORRECT" << endl;
+			}
+
+			// If user guessed entire sequence, add and play animation
+			if (userIndex >= (int)sequence.size()) {
+				AddToSequence();
+			}
+		 }
 	}
 }
 
@@ -180,4 +207,10 @@ void AddToSequence()
 {
 	sequence.push_back( GetRandomValue(0,3) );
 	PlaySequence();
+}
+
+void StartUserInput()
+{
+	userIndex = 0;
+	gettingInput = true;
 }
