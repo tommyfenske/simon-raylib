@@ -1,5 +1,7 @@
 #pragma once
 #include "raylib.h"
+#include <string>
+using namespace std;
 
 /** 
  * @class Button
@@ -8,19 +10,23 @@
 class Button {
     private:
         int i;
+
         Rectangle rect;
         Rectangle hiRect;
-        bool drawHi;
+
         Color regColor;
         Color hiColor;
         Color drawColor;
+
         bool isAnimating;
         int frameCount;
         int frameMax;
         int animBuffer;
+
+        Sound tone;
     public:
         Button();
-        Button(int i, Rectangle rec, Rectangle hiRec, Color regCol, Color hiCol);
+        Button(int i, Rectangle rec, Rectangle hiRec, Color regCol, Color hiCol, string tonePath);
 
         /**
          * @brief Called every update frame.

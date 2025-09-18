@@ -54,15 +54,23 @@ static const Color btnHiColors[4] = {
 	{0xfe, 0xaa, 0xe4, 0xff}	// feaae4 RED
 };
 
+// SOUNDS
+static const string btnTones[4] = {
+	"assets/tone-1.wav",
+	"assets/tone-2.wav",
+	"assets/tone-3.wav",
+	"assets/tone-4.wav"
+};
+
 int main() {
 	InitWindow(screenWidth, screenHeight, "S I M O N");
+	InitAudioDevice();
 	//ToggleFullscreen();
 
 	InitGame();
 	SetTargetFPS(60);
 
-	cout << "playing!" << endl;
-	PlaySequence();
+	PlaySequence(); // TODO: move to a better spot later
 
 	while (!WindowShouldClose()) {
 		UpdateDrawFrame();
@@ -78,8 +86,7 @@ void InitGame(void)
 	// Calculate Button Rectangle Objects
 	const int BUTTON_WIDTH = 120;
 	const int BUTTON_MARGIN = 5;
-	const int BUTTON_HI_WIDTH = 124;
-	const int BUTTON_HI_MARGIN = 2;
+
 	static const Rectangle btnRecs[4] = {
 		{ screenWidth/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, screenHeight/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH },	// UPLEFT
 		{ screenWidth/2.0f + BUTTON_MARGIN, screenHeight/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH },					// UPRIGHT
@@ -94,7 +101,7 @@ void InitGame(void)
 	};
 	// Populate Buttons
 	for (int i = 0; i < 4; i++) {
-		Button b = Button(i, btnRecs[i], btnHiRecs[i], btnRegColors[i], btnHiColors[i]);
+		Button b = Button(i, btnRecs[i], btnHiRecs[i], btnRegColors[i], btnHiColors[i], btnTones[i]);
 		buttons[i] = b;
 	}
 	
@@ -122,7 +129,7 @@ void UpdateGame(void)
 		// If current animation has finished
 		if ( ! buttons[ sequence.at(indexAnimating) ].IsAnimating() ) {
 			// If more buttons in sequence
-			if (++indexAnimating < sequence.size() ) {
+			if (++indexAnimating < int(sequence.size() ) ) {
 				// Start next button animation
 				buttons[ sequence.at(indexAnimating) ].StartAnim();
 			} else {

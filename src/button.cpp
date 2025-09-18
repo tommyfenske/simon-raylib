@@ -3,21 +3,24 @@
 #include <iostream>
 using namespace std;
 
-
 Button::Button(){};
-Button::Button(int i, Rectangle rec, Rectangle hiRec, Color regCol, Color hiCol)
+Button::Button(int i, Rectangle rec, Rectangle hiRec, Color regCol, Color hiCol, string tonePath)
 {
     this->i = i;
+
     this->rect = rec;
     this->hiRect = hiRec;
-    this->drawHi = false;
+
     this->regColor = regCol;
     this->hiColor = hiCol;
     this->drawColor = regColor;
+
     this->isAnimating = false;
     this->frameCount = 0;
     this->frameMax = 60;
     this->animBuffer = 15;
+
+    this->tone = LoadSound(tonePath.c_str());
 }
 
 void Button::Update()
@@ -31,9 +34,6 @@ void Button::Draw()
 {
     DrawRectangleRounded(rect, 0.2, 1, drawColor);
     DrawRectangleRoundedLinesEx(hiRect, 0.2, 1, 3, regColor);
-    if (isAnimating) {
-        //DrawRectangleRoundedLinesEx(hiRect, 0.2, 1, 4, hiColor);
-    }
 }
 
 void Button::Print()
@@ -65,14 +65,14 @@ void Button::StartAnim()
 {
     frameCount = 0;
     isAnimating = true;
+    PlaySound(tone);
 }
 
 void Button::GlowAnimation()
 {
-    cout << i << " : Animating : " << frameCount << endl;
+    //cout << i << " : Animating : " << frameCount << endl;
  
     if (frameCount < frameMax) {
-        //PrintDrawColor();
         SetColorHi();
         frameCount++;
     } else if (frameCount < frameMax + animBuffer) {
