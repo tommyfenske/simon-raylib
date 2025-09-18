@@ -30,6 +30,8 @@ static void UpdateDrawFrame(void);  // Update and Draw (one frame)
 static void PlaySequence(void);
 static void AddToSequence(void);
 static void StartUserInput(void);
+static void PlayIncorrect(void);
+static void ResetSequence(void);
 
 //Variables
 Button buttons[4];
@@ -63,6 +65,7 @@ static const string btnTones[4] = {
 	"assets/tone-3.wav",
 	"assets/tone-4.wav"
 };
+Sound incorrectFX;
 
 int main()
 { 
@@ -80,12 +83,15 @@ int main()
 	}
 
 	UnloadGame();
+	CloseAudioDevice();
 	CloseWindow();
 	return 0;
 }
 
 void InitGame(void)
 {
+	incorrectFX = LoadSound("assets/explosion.wav");
+
 	// Calculate Button Rectangle Objects
 	const int BUTTON_WIDTH = 120;
 	const int BUTTON_MARGIN = 5;
@@ -155,9 +161,12 @@ void UpdateGame(void)
 				cout << "CORRECT" << endl;
 				buttons[clickedIndex].PlayTone();
 				userIndex++;
-			} else { 
+			} else if (clickedIndex > -1) { 
 				// INCORRECT GUESS
 				cout << "INCORRECT" << endl;
+				PlayIncorrect();
+				ResetSequence();
+				return;
 			}
 
 			// If user guessed entire sequence, add and play animation
@@ -213,8 +222,21 @@ void AddToSequence()
 	PlaySequence();
 }
 
+void ResetSequence()
+{
+	cout << "Resetting..." << endl;
+	gettingInput = false;
+	sequence = {};
+	AddToSequence();
+}
+
 void StartUserInput()
 {
 	userIndex = 0;
 	gettingInput = true;
+}
+
+void PlayIncorrect()
+{
+	PlaySound(incorrectFX);
 }
