@@ -9,6 +9,7 @@ using namespace std;
 // Simon Headers
 #include "button.hpp"
 
+
 // Compile command:
 // gcc src/*.cpp -o simon.exe -O1 -Wall -std=c++2c -lstdc++ -Wno-missing-braces -I ./include/ -L ./lib/ -lraylib -lopengl32 -lgdi32 -lwinmm
 
@@ -25,7 +26,19 @@ static void UnloadGame(void);       // Unload game
 static void UpdateDrawFrame(void);  // Update and Draw (one frame)
 
 // Simon Declarations
+// Functions
+static void PlaySequence(void);
+static void AddToSequence(void);
+
+//Variables
 Button buttons[4];
+vector<int> sequence = {0, 1, 2, 3}; // each int corresponds to the button to be pressed
+bool isAnimating = false;
+int indexAnimating = -1;
+
+int userIndex = -1;
+int userGuess = -1;
+
 // COLORS
 // https://lospec.com/palette-list/vanilla-milkshake
 static const Color btnRegColors[4] = {
@@ -48,6 +61,9 @@ int main() {
 	InitGame();
 	SetTargetFPS(60);
 
+	cout << "playing!" << endl;
+	PlaySequence();
+
 	while (!WindowShouldClose()) {
 		UpdateDrawFrame();
 	}
@@ -62,7 +78,15 @@ void InitGame(void)
 	// Calculate Button Rectangle Objects
 	const int BUTTON_WIDTH = 120;
 	const int BUTTON_MARGIN = 5;
+	const int BUTTON_HI_WIDTH = 124;
+	const int BUTTON_HI_MARGIN = 2;
 	static const Rectangle btnRecs[4] = {
+		{ screenWidth/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, screenHeight/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH },	// UPLEFT
+		{ screenWidth/2.0f + BUTTON_MARGIN, screenHeight/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH },					// UPRIGHT
+		{ screenWidth/2.0f + BUTTON_MARGIN, screenHeight/2.0f + BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH },								// DOWNRIGHT
+		{ screenWidth/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, screenHeight/2.0f + BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH }					// DOWNLEFT
+	};
+	static const Rectangle btnHiRecs[4] = {
 		{ screenWidth/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, screenHeight/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH },	// UPLEFT
 		{ screenWidth/2.0f + BUTTON_MARGIN, screenHeight/2.0f - BUTTON_WIDTH - BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH },					// UPRIGHT
 		{ screenWidth/2.0f + BUTTON_MARGIN, screenHeight/2.0f + BUTTON_MARGIN, BUTTON_WIDTH, BUTTON_WIDTH },								// DOWNRIGHT
@@ -70,22 +94,46 @@ void InitGame(void)
 	};
 	// Populate Buttons
 	for (int i = 0; i < 4; i++) {
-		Button b = Button(i, btnRecs[i], btnRegColors[i], btnHiColors[i]);
+		Button b = Button(i, btnRecs[i], btnHiRecs[i], btnRegColors[i], btnHiColors[i]);
 		buttons[i] = b;
 	}
+	
 }
 
 void UpdateGame(void)
 {
-	Vector2 mousePos = GetMousePosition();
+	// UPDATE BUTTONS
     for (int i = 0; i < 4; i++) {
-        // Highlight if colliding
-        if ( CheckCollisionPointRec( mousePos, buttons[i].getRect() ) ) {
-			buttons[i].setColorHi();
-		} else {
-			buttons[i].setColorReg();
+
+		if (!isAnimating) {
+			// Highlight if colliding
+			if ( buttons[i].IsCollidingPt( GetMousePosition() ) ) {
+				buttons[i].SetColorHi();
+			} else {
+				buttons[i].SetColorReg();
+			}
 		}
+
+		buttons[i].Update();
     }
+
+	
+	if (isAnimating) { // ANIMATE SEQUENCE
+		// If current animation has finished
+		if ( ! buttons[ sequence.at(indexAnimating) ].IsAnimating() ) {
+			// If more buttons in sequence
+			if (++indexAnimating < sequence.size() ) {
+				// Start next button animation
+				buttons[ sequence.at(indexAnimating) ].StartAnim();
+			} else {
+				// End Sequence Animation
+				isAnimating = false;
+				AddToSequence();
+			}
+		}	
+	} else { // GET USER SEQUENCE
+
+	}
 }
 
 void DrawGame(void)
@@ -96,7 +144,7 @@ void DrawGame(void)
 		DrawFPS(10, 10);
 
 		for (Button b : buttons) {
-        	b.draw();
+        	b.Draw();
     	}
 
 	EndDrawing();
@@ -111,4 +159,18 @@ void UpdateDrawFrame(void)
 {
 	UpdateGame();
   	DrawGame();
+}
+
+void PlaySequence()
+{
+	indexAnimating = 0;
+	isAnimating = true;
+
+	buttons[ sequence.at(indexAnimating) ].StartAnim();
+}
+
+void AddToSequence()
+{
+	sequence.push_back( GetRandomValue(0,3) );
+	PlaySequence();
 }
