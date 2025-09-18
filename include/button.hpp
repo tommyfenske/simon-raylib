@@ -85,4 +85,9 @@ class Button {
          * @brief Prints the Button's drawColor to console.
          */
         void PrintDrawColor();
+
+        /**
+         * @brief Plays the buttons corresponding tone
+         */
+        void PlayTone();
 };

@@ -18,7 +18,7 @@ Button::Button(int i, Rectangle rec, Rectangle hiRec, Color regCol, Color hiCol,
     this->isAnimating = false;
     this->frameCount = 0;
     this->frameMax = 60;
-    this->animBuffer = 15;
+    this->animBuffer = 10;
 
     this->tone = LoadSound(tonePath.c_str());
 }
@@ -92,4 +92,9 @@ void Button::GlowAnimation()
 void Button::PrintDrawColor()
 {
     printf("%x, %x, %x", drawColor.r, drawColor.g, drawColor.b);
+}
+
+void Button::PlayTone()
+{
+    PlaySound(tone);
 }

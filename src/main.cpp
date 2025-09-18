@@ -114,15 +114,12 @@ void UpdateGame(void)
 {
 	// UPDATE BUTTONS
     for (int i = 0; i < 4; i++) {
-
-		if (!isAnimating) {
 			// Highlight if colliding
-			if ( buttons[i].IsCollidingPt( GetMousePosition() ) ) {
+			if ( !isAnimating && buttons[i].IsCollidingPt( GetMousePosition() ) ) {
 				buttons[i].SetColorHi();
 			} else {
 				buttons[i].SetColorReg();
 			}
-		}
 
 		buttons[i].Update();
     }
@@ -156,6 +153,7 @@ void UpdateGame(void)
 			if (clickedIndex == sequence[userIndex]) {
 				// CORRECT GUESS
 				cout << "CORRECT" << endl;
+				buttons[clickedIndex].PlayTone();
 				userIndex++;
 			} else { 
 				// INCORRECT GUESS
@@ -164,9 +162,14 @@ void UpdateGame(void)
 
 			// If user guessed entire sequence, add and play animation
 			if (userIndex >= (int)sequence.size()) {
-				AddToSequence();
+				gettingInput = false;
+				buttons[sequence.at(userIndex-1)].StartAnim();
 			}
 		 }
+	} else { // Sequence guessed, awaiting animation to finish
+		if ( !buttons[sequence.at(userIndex-1)].IsAnimating() ) {
+			AddToSequence();
+		}
 	}
 }
 
@@ -174,7 +177,8 @@ void DrawGame(void)
 {
 	BeginDrawing();
     
-    	ClearBackground(BLACK);
+    	if (isAnimating) ClearBackground(BLACK);
+		else ClearBackground(WHITE);
 		DrawFPS(10, 10);
 
 		for (Button b : buttons) {
