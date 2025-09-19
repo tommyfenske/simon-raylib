@@ -30,12 +30,14 @@ static void UpdateDrawFrame(void);  // Update and Draw (one frame)
 static void PlaySequence(void);
 static void AddToSequence(void);
 static void StartUserInput(void);
+static void PlayCorrect(void);
 static void PlayIncorrect(void);
 static void ResetSequence(void);
+static void DrawCenteredText(string text, int y, int fontSize, Color color);
 
 //Variables
 Button buttons[4];
-vector<int> sequence = {0}; // each int corresponds to the button to be pressed
+vector<int> sequence = {}; // each int corresponds to the button to be pressed
 bool isAnimating = false;
 int indexAnimating = -1;
 
@@ -66,6 +68,7 @@ static const string btnTones[4] = {
 	"assets/tone-4.wav"
 };
 Sound incorrectFX;
+Sound correctFX;
 
 int main()
 { 
@@ -75,8 +78,6 @@ int main()
 
 	InitGame();
 	SetTargetFPS(60);
-
-	PlaySequence(); // TODO: move to a better spot later
 
 	while (!WindowShouldClose()) {
 		UpdateDrawFrame();
@@ -91,6 +92,7 @@ int main()
 void InitGame(void)
 {
 	incorrectFX = LoadSound("assets/explosion.wav");
+	correctFX = LoadSound("assets/pickupCoin.wav");
 
 	// Calculate Button Rectangle Objects
 	const int BUTTON_WIDTH = 120;
@@ -130,6 +132,11 @@ void UpdateGame(void)
 		buttons[i].Update();
     }
 
+	if (sequence.empty()) {
+		if ( IsKeyDown(KEY_ENTER) ) {
+			AddToSequence();
+		}
+	}
 	
 	if (isAnimating) { // ANIMATE SEQUENCE
 		// If current animation has finished
@@ -175,7 +182,7 @@ void UpdateGame(void)
 				buttons[sequence.at(userIndex-1)].StartAnim();
 			}
 		 }
-	} else { // Sequence guessed, awaiting animation to finish
+	} else if (!sequence.empty()) { // Sequence guessed, awaiting animation to finish
 		if ( !buttons[sequence.at(userIndex-1)].IsAnimating() ) {
 			AddToSequence();
 		}
@@ -186,9 +193,16 @@ void DrawGame(void)
 {
 	BeginDrawing();
     
-    	if (isAnimating) ClearBackground(BLACK);
-		else ClearBackground(WHITE);
-		DrawFPS(10, 10);
+    	ClearBackground(BLACK);
+		//DrawFPS(10, 10);
+
+		DrawCenteredText("Simon", 15, 30, WHITE);
+		if (sequence.empty()) {
+			DrawCenteredText("Press Enter to Start", 315, 30, WHITE);
+		} else {
+			string output = "Score: " + to_string(sequence.size()-1);
+			DrawCenteredText(output, 315, 30, WHITE);
+		}
 
 		for (Button b : buttons) {
         	b.Draw();
@@ -219,6 +233,7 @@ void PlaySequence()
 void AddToSequence()
 {
 	sequence.push_back( GetRandomValue(0,3) );
+	PlayCorrect();
 	PlaySequence();
 }
 
@@ -227,7 +242,6 @@ void ResetSequence()
 	cout << "Resetting..." << endl;
 	gettingInput = false;
 	sequence = {};
-	AddToSequence();
 }
 
 void StartUserInput()
@@ -236,7 +250,18 @@ void StartUserInput()
 	gettingInput = true;
 }
 
+void PlayCorrect()
+{
+	PlaySound(correctFX);
+}
+
 void PlayIncorrect()
 {
 	PlaySound(incorrectFX);
+}
+
+void DrawCenteredText(string text, int y, int fontSize, Color color)
+{
+	int textLength = MeasureText(text.c_str(), fontSize);
+	DrawText(text.c_str(), screenWidth/2 - textLength/2, y, fontSize, color);
 }
