@@ -180,6 +180,7 @@ void UpdateGame(void)
 			if (userIndex >= (int)sequence.size()) {
 				gettingInput = false;
 				buttons[sequence.at(userIndex-1)].StartAnim();
+				PlayCorrect();
 			}
 		 }
 	} else if (!sequence.empty()) { // Sequence guessed, awaiting animation to finish
@@ -233,7 +234,6 @@ void PlaySequence()
 void AddToSequence()
 {
 	sequence.push_back( GetRandomValue(0,3) );
-	PlayCorrect();
 	PlaySequence();
 }
 
